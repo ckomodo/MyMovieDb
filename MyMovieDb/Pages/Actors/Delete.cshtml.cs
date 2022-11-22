@@ -1,63 +1,80 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using MyMovieDb.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
-using MyMovieDb.Data;
-using MyMovieDb.Models;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace MyMovieDb.Pages.Actors
 {
     public class DeleteModel : PageModel
     {
         private readonly MyMovieDb.Data.MovieContext _context;
+        private readonly ILogger<DeleteModel> _logger;
 
-        public DeleteModel(MyMovieDb.Data.MovieContext context)
+        public DeleteModel(MyMovieDb.Data.MovieContext context,
+                           ILogger<DeleteModel> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         [BindProperty]
-      public Actor Actor { get; set; }
+        public Actor Actor { get; set; }
+        public string ErrorMessage { get; set; }
 
-        public async Task<IActionResult> OnGetAsync(int? id)
+        public async Task<IActionResult> OnGetAsync(int? id, bool? saveChangesError = false)
         {
-            if (id == null || _context.Actors == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var actor = await _context.Actors.FirstOrDefaultAsync(m => m.ID == id);
+            Actor = await _context.Actors
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.ID == id);
 
-            if (actor == null)
+            if (Actor == null)
             {
                 return NotFound();
             }
-            else 
+
+            if (saveChangesError.GetValueOrDefault())
             {
-                Actor = actor;
+                ErrorMessage = String.Format("Delete {ID} failed. Try again", id);
             }
+
             return Page();
         }
 
         public async Task<IActionResult> OnPostAsync(int? id)
         {
-            if (id == null || _context.Actors == null)
+            if (id == null)
             {
                 return NotFound();
             }
+
             var actor = await _context.Actors.FindAsync(id);
 
-            if (actor != null)
+            if (actor == null)
             {
-                Actor = actor;
-                _context.Actors.Remove(Actor);
-                await _context.SaveChangesAsync();
+                return NotFound();
             }
 
-            return RedirectToPage("./Index");
+            try
+            {
+                _context.Actors.Remove(actor);
+                await _context.SaveChangesAsync();
+                return RedirectToPage("./Index");
+            }
+            catch (DbUpdateException ex)
+            {
+                _logger.LogError(ex, ErrorMessage);
+
+                return RedirectToAction("./Delete",
+                new { id, saveChangesError = true });
+            }
         }
     }
 }

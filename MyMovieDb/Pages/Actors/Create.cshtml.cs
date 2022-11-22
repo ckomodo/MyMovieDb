@@ -26,20 +26,25 @@ namespace MyMovieDb.Pages.Actors
 
         [BindProperty]
         public Actor Actor { get; set; }
-        
 
-        // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
         public async Task<IActionResult> OnPostAsync()
         {
-          if (!ModelState.IsValid)
+            var emptyActor = new Actor();
+
+            if (await TryUpdateModelAsync<Actor>(
+                emptyActor,
+                "actor",   // Prefix for form value.
+                a => a.FirstName, a => a.LastName, a => a.PlayingAS))
             {
-                return Page();
+                _context.Actors.Add(emptyActor);
+                await _context.SaveChangesAsync();
+                return RedirectToPage("./Index");
             }
 
-            _context.Actors.Add(Actor);
-            await _context.SaveChangesAsync();
-
-            return RedirectToPage("./Index");
+            return Page();
         }
+
+
+
     }
 }

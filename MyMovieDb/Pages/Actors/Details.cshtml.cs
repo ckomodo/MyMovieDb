@@ -28,7 +28,12 @@ namespace MyMovieDb.Pages.Actors
                 return NotFound();
             }
 
-            var actor = await _context.Actors.FirstOrDefaultAsync(m => m.ID == id);
+                var actor = await _context.Actors
+                .Include(s => s.Casts)
+                .ThenInclude(e => e.Movie)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(m => m.ID == id);
+
             if (actor == null)
             {
                 return NotFound();

@@ -23,52 +23,87 @@ namespace MyMovieDb.Pages.Actors
         [BindProperty]
         public Actor Actor { get; set; } = default!;
 
+        //public async Task<IActionResult> OnGetAsync(int? id)
+        //{
+        //    if (id == null || _context.Actors == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    var actor =  await _context.Actors.FirstOrDefaultAsync(m => m.ID == id);
+        //    if (actor == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    Actor = actor;
+        //    return Page();
+        //}
+
+        //// To protect from overposting attacks, enable the specific properties you want to bind to.
+        //// For more details, see https://aka.ms/RazorPagesCRUD.
+        //public async Task<IActionResult> OnPostAsync()
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return Page();
+        //    }
+
+        //    _context.Attach(Actor).State = EntityState.Modified;
+
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        if (!ActorExists(Actor.ID))
+        //        {
+        //            return NotFound();
+        //        }
+        //        else
+        //        {
+        //            throw;
+        //        }
+        //    }
+
+        //    return RedirectToPage("./Index");
+        //}
         public async Task<IActionResult> OnGetAsync(int? id)
         {
-            if (id == null || _context.Actors == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var actor =  await _context.Actors.FirstOrDefaultAsync(m => m.ID == id);
-            if (actor == null)
+            Actor = await _context.Actors.FindAsync(id);
+
+            if (Actor == null)
             {
                 return NotFound();
             }
-            Actor = actor;
             return Page();
         }
 
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see https://aka.ms/RazorPagesCRUD.
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(int id)
         {
-            if (!ModelState.IsValid)
+            var actorToUpdate = await _context.Actors.FindAsync(id);
+
+            if (actorToUpdate == null)
             {
-                return Page();
+                return NotFound();
             }
 
-            _context.Attach(Actor).State = EntityState.Modified;
-
-            try
+            if (await TryUpdateModelAsync<Actor>(
+                actorToUpdate,
+                "actor",
+                a => a.FirstName, a => a.LastName, a => a.PlayingAS))
             {
                 await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ActorExists(Actor.ID))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return RedirectToPage("./Index");
             }
 
-            return RedirectToPage("./Index");
+            return Page();
         }
-
         private bool ActorExists(int id)
         {
           return _context.Actors.Any(e => e.ID == id);
