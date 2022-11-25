@@ -7,10 +7,10 @@ namespace MyMovieDb.Data
     {
         public static void Initialize(MovieContext context)
         {
-            // Look for any students.
+            
             if (context.Actors.Any())
             {
-                return;   // DB has been seeded
+                return;
             }
 
             var actors = new Actor[]
@@ -26,14 +26,36 @@ namespace MyMovieDb.Data
             context.Actors.AddRange(actors);
             context.SaveChanges();
 
-            var movie = new Movie[]
+            //if (context.Movies.Any())
+            //{
+            //    return;
+            //}
+            var movies = new Movie[]
             {
-                new Movie{MovieID=1050,Title="Pulp Fiction",Genre="Crime, Drama",Price=10,Rating="Mature Audience"},
-                new Movie{MovieID=4022,Title="The Shawshank Redemption",Genre="Drama",Price=12, Rating="General Audience"},
-                new Movie{MovieID=4041,Title="The Lion King",Genre="Animation,Drama", Price=15, Rating="General"}
+                new 
+                Movie{MovieID=1050,
+                    Title="Pulp Fiction",
+                    ReleaseDate=DateTime.Parse("1994-09-01"),
+                    Genre="Crime, Drama",
+                    Price=10,
+                    Rating="Mature Audience"},
+                new 
+                Movie{MovieID=4022,
+                    Title="The Shawshank Redemption",
+                    ReleaseDate=DateTime.Parse("1994-09-01"),
+                    Genre="Drama",
+                    Price=12,
+                    Rating="General Audience"},
+                new 
+                Movie{MovieID=4041,
+                    Title="The Lion King",
+                    ReleaseDate = DateTime.Parse("1994-09-01"),
+                    Genre="Animation,Drama",
+                    Price=15,
+                    Rating="General"}
             };
 
-            context.Movies.AddRange(movie);
+            context.Movies.AddRange(movies);
             context.SaveChanges();
 
             var casts = new Cast[]
